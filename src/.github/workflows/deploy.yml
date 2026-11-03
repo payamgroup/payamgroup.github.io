@@ -18,7 +18,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v7
 
-      - name: Install dependencies and build Astro
+      - name: Install, build and upload Astro site
         uses: withastro/action@v6
         with:
           node-version: '24'
