@@ -36,10 +36,32 @@ const year = new Date().getFullYear();
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="description" content={description} />
-<title>{pageTitle}</title>
-<link rel="icon" type="image/png" href="/scms-favicon.png" />
-<link rel="canonical" href={canonicalURL} />
+    <meta name="description" content={description} />
+    <title>{pageTitle}</title>
+    <link rel="icon" type="image/png" href="/scms-favicon.png" />
+    <link rel="canonical" href={canonicalURL} />
+    {currentPath === "/" && (
+      <script
+        type="application/ld+json"
+        set:html={JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "ResearchOrganization",
+          "name": "Payam Research Group",
+          "alternateName": "SCMS",
+          "description": "Scientific Computing for Materials and Structures",
+          "url": "https://payamgroup.github.io/",
+          "member": {
+            "@type": "Person",
+            "name": "Payam Khazaeinejad",
+            "honorificPrefix": "Dr",
+            "sameAs": [
+              "https://www.kingston.ac.uk/about/staff/dr-payam-khazaeinejad",
+              "https://orcid.org/0000-0002-4024-6641"
+            ]
+          }
+        })}
+      />
+    )}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
