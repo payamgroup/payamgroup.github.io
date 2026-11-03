@@ -1,0 +1,42 @@
+PAYAM RESEARCH GROUP — RESTORE YOUR WEBSITE ON A MAC
+====================================================
+
+This is a complete clean copy of your Astro project, built from the
+Archive.zip you uploaded on 3 November 2026.
+
+1. In Finder, locate your current website folder. DO NOT DELETE IT.
+2. Rename that old folder: payam-research-group-OLD-BACKUP
+   (If it has a different name, add -OLD-BACKUP to its name.)
+3. Double-click the new ZIP and extract it somewhere easy to find,
+   such as Documents. It contains ONE folder: payam-research-group.
+4. Open Visual Studio Code, choose File > Open Folder, and select
+   the newly extracted payam-research-group folder.
+5. In VS Code, open Terminal > New Terminal. Run:
+      node -v
+      npm ci
+      npm run dev
+   Then open http://localhost:4321/ in your browser.
+6. Check Home, Research, all four theme pages, People, Publications,
+   project images, and publication search. Once happy, stop the dev
+   server with Ctrl+C, then run:
+      npm run build
+7. Only after confirming the fresh copy works should you consider
+   deleting the OLD-BACKUP folder. Keeping it is safer.
+
+IMPORTANT
+- This ZIP deliberately excludes node_modules, dist and .astro.
+  These are installed or generated locally; npm ci restores node_modules.
+- Use Node.js 22.23.4 or newer for this version of Astro.
+- Avoid pasting files from the damaged folder back into the new folder
+  without inspecting them first, or the problem may reappear.
+- Recent changes made AFTER the source Archive.zip was uploaded will
+  NOT be present in this replacement copy.
+- GitHub Pages deployment still needs setup: a GitHub Actions workflow
+  is not included in the source you uploaded.
+- CLEANUP_REPORT.md documents exactly what was excluded.
+
+IF THE ZIP DOES NOT OPEN
+Try the alternative .tar.gz full website archive. On macOS, Finder's
+Archive Utility usually opens both ZIP and tar.gz archives. Do not just
+rename extensions. The source-only ZIP is NOT a standalone website;
+use it only if you already have the same images elsewhere.

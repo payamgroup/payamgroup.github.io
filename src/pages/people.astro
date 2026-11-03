@@ -1,0 +1,476 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+import {
+  groupLeader,
+  currentPostgraduateStudents,
+  currentUndergraduateStudents,
+  formerPostgraduateStudents,
+  formerUndergraduateStudents
+} from "../data/people.js";
+
+const initials = (name: string): string =>
+  name
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part: string) => part[0])
+    .join("")
+    .toUpperCase();
+
+const contactEmail = "p.khazaeinejad [at] kingston.ac.uk";
+const imecheGroupUrl =
+  "https://www.imeche.org/industry-sectors/structural-technology-and-materials/";
+const iopAmgUrl =
+  "https://www.iop.org/physics-community/special-interest-groups/applied-mechanics-group";
+const imecheProcessUrl =
+  "https://www.imeche.org/industry-sectors/process";
+---
+
+<BaseLayout
+  title="People"
+  description="Meet the group leader, current students and alumni of the Payam Research Group."
+>
+  <main>
+    <!-- PAGE INTRODUCTION: SAME SPACING AND ALIGNMENT AS RESEARCH PAGE -->
+    <section class="hero">
+      <div class="container">
+        <p class="eyebrow">PAYAM RESEARCH GROUP</p>
+        <h1>Our People</h1>
+        <p class="hero-description">
+          Meet the researchers and students contributing to scientific computing
+          for materials and structures.
+        </p>
+      </div>
+    </section>
+
+    <!-- GROUP LEADER -->
+    <section class="people-section" id="group-leader">
+      <div class="container">
+        <div class="section-heading" data-reveal>
+          <p class="section-label">LEADERSHIP</p>
+          <h2>Group Leader</h2>
+        </div>
+
+        <article class="leader-card" data-reveal>
+          <div class="portrait">
+            {groupLeader.photo ? (
+              <img
+                src={groupLeader.photo}
+                alt={`Portrait of ${groupLeader.name}`}
+                width="600"
+                height="750"
+                loading="lazy"
+                decoding="async"
+              />
+            ) : (
+              <span aria-label={groupLeader.name}>{initials(groupLeader.name)}</span>
+            )}
+          </div>
+
+          <div class="leader-details">
+            <p class="role">{groupLeader.role}</p>
+            <h3>{groupLeader.name}</h3>
+            <p class="position">{groupLeader.position}</p>
+            <p class="institution">{groupLeader.institution}</p>
+
+            <div class="contact-row">
+              <span class="contact-label">Email</span>
+              <span class="contact-email">{contactEmail}</span>
+            </div>
+
+            <!-- Preserve the existing biography from src/data/people.js. -->
+            <!-- Additional biographical context based on the public university profile. -->
+            <p class="bio bio-additional">
+              Payam's research connects computational mechanics, multiscale modelling
+              and bio-inspired design to understand how geometry, material
+              distribution and internal architecture influence mechanical
+              behaviour. His interests span architected materials and
+              metamaterials, lightweight and bio-inspired structures, and
+              structural integrity under complex thermal and mechanical loading.
+            </p>
+            <p class="bio bio-additional">
+              Alongside his research, Payam serves as Associate Professor of Solid
+              Mechanics and Director of Learning and Teaching in the School of Engineering at Kingston
+              University London. He holds a PhD in Engineering from the
+              University of Edinburgh and is a Chartered Engineer (CEng),
+              Chartered Scientist (CSci), Fellow of the Institution of Mechanical
+              Engineers (IMechE), Senior Fellow of Advance HE, Senior Member of the American Institute of Aeronautics and Astronautics (AIAA), and Member of the American Society of Mechanical Engineers (ASME), the Institute of Physics (IOP) and the UK Metamaterials Network
+.
+            </p>
+
+            <div class="professional-leadership">
+              <p class="leadership-label">PROFESSIONAL APPOINTMENTS &amp; SERVICE</p>
+              <p class="leadership-title">
+                Chair, Structural Technology and Materials Group (STMG)
+              </p>
+              <p class="leadership-organisation">
+                Institution of Mechanical Engineers (IMechE)
+              </p>
+              <a
+                href={imecheGroupUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Explore the IMechE group <span aria-hidden="true">↗</span>
+              </a>
+
+              <div class="leadership-divider" aria-hidden="true"></div>
+
+              <p class="leadership-title">
+                Chair, Materials Working Group, Process Industries Division (PID)
+              </p>
+              <p class="leadership-organisation">
+                Institution of Mechanical Engineers (IMechE)
+              </p>
+              <a
+                href={imecheProcessUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Explore the IMechE Division <span aria-hidden="true">↗</span>
+              </a>
+
+              <div class="leadership-divider" aria-hidden="true"></div>
+
+              <p class="leadership-title">
+                Elected Committee Member, Applied Mechanics Group (AMG)
+              </p>
+              <p class="leadership-organisation">
+                Institute of Physics (IOP) · Committee term 2024–2028
+              </p>
+              <a
+                href={iopAmgUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View the IOP Applied Mechanics Group <span aria-hidden="true">↗</span>
+              </a>
+            </div>
+
+            <h4>Research Interests</h4>
+            <div class="interests">
+              {groupLeader.interests.map((interest) => (
+                <span class="tag">{interest}</span>
+              ))}
+            </div>
+
+            {groupLeader.links?.length > 0 && (
+              <div class="profile-links">
+                {groupLeader.links.map((link) => (
+                  <a href={link.url} target="_blank" rel="noopener noreferrer">
+                    {link.label} <span aria-hidden="true">↗</span>
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- CURRENT STUDENTS -->
+    <section class="students-section" id="current-students">
+      <div class="container">
+        <div class="section-heading" data-reveal>
+          <p class="section-label">OUR RESEARCH COMMUNITY</p>
+          <h2>Current Students</h2>
+        </div>
+        <div class="student-grid">
+          <article class="student-card" data-reveal>
+            <h3>Postgraduate Students</h3>
+            {currentPostgraduateStudents.length > 0 ? (
+              <ul>
+                {currentPostgraduateStudents.map((name) => <li>{name}</li>)}
+              </ul>
+            ) : (
+              <p class="empty-note">No students currently listed.</p>
+            )}
+          </article>
+          <article class="student-card" data-reveal>
+            <h3>Undergraduate Students</h3>
+            {currentUndergraduateStudents.length > 0 ? (
+              <ul>
+                {currentUndergraduateStudents.map((name) => <li>{name}</li>)}
+              </ul>
+            ) : (
+              <p class="empty-note">No students currently listed.</p>
+            )}
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- FORMER STUDENTS -->
+    <section class="alumni-section" id="former-students">
+      <div class="container">
+        <div class="section-heading" data-reveal>
+          <p class="section-label">PAYAM RESEARCH GROUP ALUMNI</p>
+          <h2>Former Students</h2>
+        </div>
+        <div class="student-grid">
+          <article class="student-card" data-reveal>
+            <h3>Postgraduate Students</h3>
+            {formerPostgraduateStudents.length > 0 ? (
+              <ul>
+                {formerPostgraduateStudents.map((name) => <li>{name}</li>)}
+              </ul>
+            ) : (
+              <p class="empty-note">No former students listed.</p>
+            )}
+          </article>
+          <article class="student-card" data-reveal>
+            <h3>Undergraduate Students</h3>
+            {formerUndergraduateStudents.length > 0 ? (
+              <ul>
+                {formerUndergraduateStudents.map((name) => <li>{name}</li>)}
+              </ul>
+            ) : (
+              <p class="empty-note">No former students listed.</p>
+            )}
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .container {
+    width: 100%;
+    max-width: 1200px;
+    margin-inline: auto;
+  }
+
+  /* Match the Research page header exactly. */
+  .hero {
+    padding: 95px 8%;
+    background: linear-gradient(120deg, #11243a, #285576);
+    color: #fff;
+  }
+  .eyebrow {
+    color: #8ae0dc;
+    letter-spacing: 2px;
+    font-size: 13px;
+    font-weight: bold;
+  }
+  h1 {
+    font-size: clamp(38px, 5vw, 64px);
+    margin: 20px 0;
+  }
+  .hero-description {
+    max-width: 750px;
+    line-height: 1.8;
+    font-size: 18px;
+    color: #e0eaf2;
+  }
+
+  .section-heading {
+    margin-bottom: 36px;
+    text-align: left;
+  }
+  .section-label {
+    color: #168b95;
+    letter-spacing: 2px;
+    font-size: 12px;
+    font-weight: bold;
+  }
+  h2 {
+    font-size: clamp(30px, 4vw, 42px);
+    margin: 12px 0 30px;
+    line-height: 1.2;
+    color: #172b4d;
+  }
+
+  .people-section, .students-section, .alumni-section {
+    padding: 85px 8%;
+  }
+  .people-section, .alumni-section { background: #f7f9fc; }
+  .students-section { background: #edf3f7; }
+  .leader-card {
+    display: grid;
+    grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+    gap: 45px;
+    padding: 38px;
+    background: #fff;
+    border: 1px solid #e1e8ef;
+    border-radius: 14px;
+    transition: border-color .3s ease, box-shadow .3s ease;
+  }
+  .leader-card:hover {
+    border-color: #c5d9e2;
+    box-shadow: 0 15px 35px rgba(17, 36, 58, .06);
+  }
+  .portrait {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    background: #dce7ed;
+    border-radius: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .portrait img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 0;
+  }
+  .portrait span {
+    font-size: 54px;
+    font-weight: bold;
+    color: #607e90;
+  }
+  .leader-details { min-width: 0; }
+  .role {
+    margin: 0;
+    color: #117e88;
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .leader-details h3 {
+    margin: 12px 0;
+    color: #19364c;
+    font-size: clamp(28px, 2.3vw, 38px);
+  }
+  .position {
+    margin: 0 0 5px;
+    color: #172b4d;
+    font-size: 18px;
+    font-weight: bold;
+  }
+  .institution { color: #60758b; font-size: 17px; line-height: 1.6; }
+
+  .contact-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 9px 18px;
+    margin: 16px 0 20px;
+    overflow-wrap: anywhere;
+  }
+  .contact-label {
+    color: #19364c;
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .contact-email { color: #117e88; font-weight: 700; }
+  .professional-leadership a {
+    color: #117e88;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .professional-leadership a:hover { text-decoration: underline; }
+  .bio {
+    margin: 20px 0;
+    color: #51667a;
+    font-size: clamp(17px, 1.2vw, 21px);
+    line-height: 1.8;
+  }
+  .bio-additional { margin-top: 14px; }
+
+  .professional-leadership {
+    margin: 28px 0;
+    padding: 20px 24px;
+    border-left: 3px solid #117e88;
+    background: #edf4f7;
+  }
+  .leadership-divider {
+    height: 1px;
+    margin: 22px 0;
+    background: #cddfe6;
+  }
+  .leadership-label {
+    margin: 0 0 8px;
+    color: #117e88;
+    font-size: 12px;
+    letter-spacing: 1.4px;
+    font-weight: 800;
+  }
+  .leadership-title {
+    margin: 0 0 4px;
+    color: #19364c;
+    font-size: clamp(17px, 1.2vw, 21px);
+    font-weight: 700;
+    line-height: 1.45;
+  }
+  .leadership-organisation {
+    margin: 0 0 9px;
+    color: #60758b;
+    line-height: 1.6;
+  }
+  .leader-details h4 {
+    margin: 27px 0 14px;
+    font-size: 20px;
+    color: #19364c;
+  }
+  .interests { display: flex; flex-wrap: wrap; gap: 10px; }
+  .tag {
+    padding: 9px 13px;
+    background: #edf4f7;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #285576;
+  }
+  .profile-links { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 25px; }
+  .profile-links a {
+    color: #117e88;
+    font-size: 16px;
+    font-weight: bold;
+    text-decoration: none;
+  }
+  .profile-links a:hover { text-decoration: underline; }
+
+  .student-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 25px; }
+  .student-card {
+    padding: 35px;
+    border: 1px solid #e1e8ef;
+    border-radius: 12px;
+    background: #fff;
+    transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+  }
+  .student-card:hover {
+    transform: translateY(-4px);
+    border-color: #a9ccd0;
+    box-shadow: 0 14px 30px rgba(17, 36, 58, .07);
+  }
+  .student-card h3 {
+    margin-top: 0;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e1e8ef;
+    color: #19364c;
+    font-size: clamp(23px, 1.8vw, 30px);
+  }
+  .student-card ul { padding-left: 20px; margin-bottom: 0; }
+  .student-card li {
+    margin: 14px 0;
+    color: #51667a;
+    line-height: 1.7;
+    font-size: clamp(17px, 1.15vw, 20px);
+  }
+  .student-card li::marker { color: #117e88; }
+  .empty-note { color: #8293a4; font-size: 14px; font-style: italic; }
+
+  a:focus-visible { outline: 3px solid #168b95; outline-offset: 4px; }
+  @media (max-width: 800px) {
+    .leader-card { grid-template-columns: 1fr; gap: 25px; }
+    .portrait { max-width: 280px; }
+    .student-grid { grid-template-columns: 1fr; }
+    .people-section, .students-section, .alumni-section { padding: 60px 7%; }
+  }
+  @media (max-width: 700px) {
+    .hero { padding: 65px 7%; }
+    .hero-description { font-size: 16px; }
+  }
+  @media (max-width: 500px) {
+    .leader-card, .student-card { padding: 22px; }
+    .professional-leadership { padding: 16px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .leader-card, .student-card { transition: none; }
+  }
+</style>

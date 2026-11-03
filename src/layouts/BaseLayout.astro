@@ -1,0 +1,347 @@
+---
+import PageInteractions from "../components/PageInteractions.astro";
+import BackToTop from "../components/BackToTop.astro";
+import { ClientRouter } from "astro:transitions";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const {
+  title,
+  description =
+    "Payam Research Group — Scientific Computing for Materials and Structures (SCMS)."
+} = Astro.props;
+
+const navigation = [
+  { label: "Home", href: "/" },
+  { label: "Research", href: "/research/" },
+  { label: "People", href: "/people/" },
+  { label: "Publications", href: "/publications/" }
+];
+
+const currentPath = Astro.url.pathname;
+const canonicalURL = new URL(
+  Astro.url.pathname,
+  Astro.site ?? "https://payamgroup.github.io"
+).toString();
+const pageTitle = title === "Payam Research Group"
+  ? title
+  : `${title} | Payam Research Group`;
+const year = new Date().getFullYear();
+---
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <title>{pageTitle}</title>
+    <link rel="canonical" href={canonicalURL} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <ClientRouter />
+  </head>
+  <body class={currentPath === "/" ? "page-home" : "page-interior"}>
+    <header class="site-header">
+      <a href="/" class="logo" aria-label="Payam Research Group — Home">
+        <img
+          src="/images/branding/payam-logo-black.png"
+          alt=""
+          class="header-logo"
+        />
+        <span class="logo-caption">
+          <strong class="scms-name">SCMS</strong>
+          <span class="scms-subtitle">
+            SCIENTIFIC COMPUTING<br />FOR MATERIALS AND STRUCTURES
+          </span>
+        </span>
+      </a>
+      <nav aria-label="Main navigation">
+        {navigation.map((item) => {
+          const isActive = item.href === "/"
+            ? currentPath === "/"
+            : currentPath.startsWith(item.href);
+          return (
+            <a href={item.href} aria-current={isActive ? "page" : undefined}>
+              {item.label}
+            </a>
+          );
+        })}
+      </nav>
+    </header>
+
+    <slot />
+
+    <footer class="site-footer">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <a href="/" class="footer-logo-link" aria-label="Payam Research Group — Home">
+            <img
+              src="/images/branding/payam-logo-white.png"
+              alt=""
+              class="footer-logo"
+              loading="lazy"
+            />
+          </a>
+          <div class="footer-description">
+            <strong class="scms-name">SCMS</strong>
+            <span class="scms-subtitle">
+              SCIENTIFIC COMPUTING<br />FOR MATERIALS AND STRUCTURES
+            </span>
+          </div>
+        </div>
+        <p class="copyright">© {year} Payam Research Group</p>
+      </div>
+    </footer>
+
+    <script>
+      let revealObserver: IntersectionObserver | null = null;
+
+      function setupScrollAnimations() {
+        revealObserver?.disconnect();
+
+        const elements = document.querySelectorAll("[data-reveal]");
+        const reducedMotion = window.matchMedia(
+          "(prefers-reduced-motion: reduce)"
+        ).matches;
+
+        if (reducedMotion || !("IntersectionObserver" in window)) {
+          return;
+        }
+
+        const observer = new IntersectionObserver((entries, activeObserver) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-visible");
+              activeObserver.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.1, rootMargin: "0px 0px -30px 0px" });
+
+        revealObserver = observer;
+
+        elements.forEach((element) => {
+          element.classList.add("reveal-init");
+          observer.observe(element);
+        });
+      }
+
+      document.addEventListener("astro:page-load", setupScrollAnimations);
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", setupScrollAnimations, { once: true });
+      } else {
+        setupScrollAnimations();
+      }
+    </script>
+    <BackToTop />
+    <PageInteractions />
+  </body>
+</html>
+
+<style>
+  :global(*) { box-sizing: border-box; }
+  :global(body) {
+    margin: 0;
+    font-family: "Source Sans 3", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    background: #f7f9fc;
+    color: #172b4d;
+  }
+  :global(button), :global(input), :global(select), :global(textarea) { font-family: inherit; }
+  :global(img) { border-radius: 0 !important; }
+
+  .site-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 25px;
+    padding: 12px 5%;
+    background: #fff;
+    border-bottom: 1px solid #e5eaf0;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+    color: #152c45;
+    text-decoration: none;
+  }
+  .header-logo { display: block; width: 115px; height: auto; object-fit: contain; }
+  .logo-caption, .footer-description {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .logo-caption .scms-name { font-size: 18px; font-weight: 800; letter-spacing: 1px; line-height: 1.2; color: #172b4d; }
+  .logo-caption .scms-subtitle { font-size: 14px; line-height: 1.5; font-weight: 600; letter-spacing: .3px; color: #60758b; }
+
+  nav { display: flex; flex-wrap: wrap; gap: 27px; }
+  nav a {
+    padding: 8px 0;
+    color: #31465c;
+    font-size: 15px;
+    font-weight: 600;
+    border-bottom: 2px solid transparent;
+    text-decoration: none;
+  }
+  nav a:hover, nav a[aria-current="page"] { color: #117e88; }
+  nav a[aria-current="page"] { border-bottom-color: #117e88; }
+  nav a:focus-visible, .logo:focus-visible, .footer-logo-link:focus-visible {
+    outline: 3px solid #168b95;
+    outline-offset: 4px;
+  }
+
+  .site-footer { background: #11243a; color: #fff; padding: 35px 5%; }
+  .footer-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 30px;
+  }
+  .footer-brand { display: flex; align-items: center; gap: 20px; }
+  .footer-logo-link { display: inline-flex; }
+  .footer-logo { display: block; width: 125px; height: auto; object-fit: contain; }
+  .footer-description .scms-name { font-size: 18px; font-weight: 800; letter-spacing: 1px; line-height: 1.2; color: #fff; }
+  .footer-description .scms-subtitle { font-size: 14px; line-height: 1.5; font-weight: 600; letter-spacing: .3px; color: #dceaf0; }
+  .copyright { color: #dceaf0; line-height: 1.6; font-size: 14px; }
+
+  /* Larger screen: larger global text and navigation, less empty margin. */
+  @media (min-width: 1200px) {
+    :global(body) { font-size: clamp(18px, 1.06vw, 21px); }
+    .site-header { padding-inline: clamp(45px, 4.5vw, 90px); }
+    nav { gap: clamp(25px, 2.1vw, 43px); }
+    nav a { font-size: clamp(17px, 1.05vw, 20px); }
+    .logo-caption .scms-name, .footer-description .scms-name { font-size: 21px; }
+    .logo-caption .scms-subtitle, .footer-description .scms-subtitle { font-size: 15px; }
+    .site-footer { padding-inline: clamp(45px, 4.5vw, 90px); }
+    .copyright { font-size: 16px; }
+  }
+
+  /* ==============================================
+     LARGER DESKTOP SCREENS — INTERIOR PAGES ONLY
+     The homepage keeps its already-approved layout.
+     Mobile and tablet rules remain unchanged.
+     ============================================== */
+  @media (min-width: 1200px) {
+    /* Use more of a large display without making lines unreasonably long. */
+    :global(body.page-interior main .container) {
+      max-width: 1680px !important;
+    }
+
+    /* Reduce wide side gutters across Research, People, Publications and themes. */
+    :global(body.page-interior main > section) {
+      padding-left: clamp(48px, 5vw, 112px) !important;
+      padding-right: clamp(48px, 5vw, 112px) !important;
+    }
+
+    /* Clear editorial hierarchy on introductory panels. */
+    :global(body.page-interior main :is(.hero, .theme-hero, .page-hero) h1) {
+      font-size: clamp(62px, 5.15vw, 92px) !important;
+      line-height: 1.08 !important;
+      letter-spacing: -0.025em;
+      max-width: 1400px;
+      text-align: left;
+    }
+
+    :global(body.page-interior main :is(.hero-description, .overview-text, .section-description)) {
+      font-size: clamp(20px, 1.3vw, 24px) !important;
+      line-height: 1.75;
+      max-width: 1150px;
+    }
+
+    /* Section headings stay aligned with the content, not isolated at centre. */
+    :global(body.page-interior main :is(.section-heading, .group-heading, .intro)) {
+      text-align: left !important;
+    }
+
+    :global(body.page-interior main :is(.section-heading, .intro, .overview-section) h2) {
+      font-size: clamp(42px, 3.4vw, 64px) !important;
+      line-height: 1.17;
+      letter-spacing: -0.02em;
+    }
+
+    /* Long-form theme headings and research project text. */
+    :global(body.page-interior main :is(.research-card, .theme-card, .project-panel) h3) {
+      font-size: clamp(27px, 2vw, 38px) !important;
+      line-height: 1.25;
+    }
+
+    :global(body.page-interior main :is(.project-summary, .project-overview p, .approach-content p)) {
+      font-size: clamp(19px, 1.2vw, 22px) !important;
+      line-height: 1.8;
+    }
+
+    /* Publications: make bibliography readable without oversized entries. */
+    :global(body.page-interior main .publication-group h2) {
+      font-size: clamp(35px, 2.65vw, 48px) !important;
+    }
+
+    :global(body.page-interior main .bibliography-entry .entry-heading strong) {
+      font-size: clamp(19px, 1.15vw, 23px) !important;
+      line-height: 1.5;
+    }
+
+    :global(body.page-interior main .bibliography-entry :is(.authors, .venue)) {
+      font-size: clamp(17px, 1vw, 20px) !important;
+    }
+
+    :global(body.page-interior main .cover-details h3) {
+      font-size: clamp(21px, 1.35vw, 26px) !important;
+    }
+
+    :global(body.page-interior main .filters :is(input, select)) {
+      font-size: 18px !important;
+    }
+
+    /* Related papers embedded inside project panels on research-theme pages. */
+    :global(body.page-interior main .publications-block li strong) {
+      font-size: clamp(21px, 1.3vw, 25px) !important;
+      line-height: 1.45;
+    }
+    :global(body.page-interior main .publications-block .paper-meta) {
+      font-size: clamp(18px, 1.05vw, 20px) !important;
+      line-height: 1.65;
+    }
+    :global(body.page-interior main .publications-block li a) {
+      font-size: 18px !important;
+    }
+
+    /* People page: maintain comfortable reading size in profiles. */
+    :global(body.page-interior main :is(.people-grid, .member-grid, .team-grid) p) {
+      font-size: clamp(18px, 1.08vw, 21px) !important;
+    }
+  }
+
+  @media (max-width: 1050px) {
+    .site-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+    nav { gap: 18px; }
+  }
+
+  @media (max-width: 600px) {
+    .header-logo { width: 100px; }
+    .footer-logo { width: 110px; }
+    .logo-caption .scms-name, .footer-description .scms-name { font-size: 16px; }
+    .logo-caption .scms-subtitle, .footer-description .scms-subtitle { font-size: 12px; line-height: 1.5; letter-spacing: .2px; }
+    .footer-brand { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .footer-content { align-items: flex-start; }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    :global([data-reveal].reveal-init) {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity .65s ease, transform .65s ease;
+    }
+    :global([data-reveal].reveal-init.is-visible) { opacity: 1; transform: translateY(0); }
+  }
+</style>

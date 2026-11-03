@@ -1,0 +1,95 @@
+---
+// Back-to-top control. The scroll-progress indicator lives in PageInteractions.astro.
+// Keeps Astro ClientRouter compatibility and honours reduced-motion settings.
+---
+
+<button
+  class="back-to-top"
+  type="button"
+  aria-label="Back to top"
+  title="Back to top"
+  data-back-to-top
+  hidden
+>
+  <span aria-hidden="true">↑</span>
+</button>
+
+<script>
+  function setupBackToTop() {
+    const button = document.querySelector<HTMLButtonElement>(
+      "[data-back-to-top]"
+    );
+
+    if (!button || button.dataset.bound === "true") return;
+    button.dataset.bound = "true";
+
+    const update = () => {
+      button.hidden = window.scrollY < 450;
+    };
+
+    const goToTop = () => {
+      const reducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+      ).matches;
+
+      window.scrollTo({
+        top: 0,
+        behavior: reducedMotion ? "auto" : "smooth"
+      });
+    };
+
+    const cleanup = () => {
+      window.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+      button.removeEventListener("click", goToTop);
+      document.removeEventListener("astro:before-swap", cleanup);
+    };
+
+    button.addEventListener("click", goToTop);
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    document.addEventListener("astro:before-swap", cleanup, { once: true });
+    update();
+  }
+
+  document.addEventListener("astro:page-load", setupBackToTop);
+
+  if (document.readyState === "loading") {
+    document.addEventListener(
+      "DOMContentLoaded",
+      setupBackToTop,
+      { once: true }
+    );
+  } else {
+    setupBackToTop();
+  }
+</script>
+
+<style>
+  .back-to-top {
+    position: fixed;
+    z-index: 999;
+    right: clamp(14px, 2vw, 28px);
+    bottom: clamp(14px, 2vw, 28px);
+    width: 48px;
+    height: 48px;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 50%;
+    background: #11243a;
+    color: #ffffff;
+    font: inherit;
+    font-size: 25px;
+    line-height: 1;
+    box-shadow: 0 8px 24px rgba(17, 36, 58, 0.18);
+    cursor: pointer;
+    transition: transform 0.2s ease, background 0.2s ease;
+  }
+
+  .back-to-top[hidden] { display: none; }
+  .back-to-top:hover { background: #117e88; transform: translateY(-3px); }
+  .back-to-top:focus-visible { outline: 3px solid #8ae0dc; outline-offset: 4px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .back-to-top { transition: none; }
+  }
+</style>

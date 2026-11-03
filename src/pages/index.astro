@@ -1,0 +1,1141 @@
+---
+
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+import { researchThemes } from "../data/researchThemes.js";
+
+import { publications } from "../data/publications.js";
+
+
+
+// Use the existing publication data; do not alter the full bibliography.
+
+const recentPublications = [...publications]
+
+  .sort((a, b) => Number(b.year || 0) - Number(a.year || 0))
+
+  .slice(0, 3);
+
+
+
+
+function doiLink(doi: string | null | undefined): string | null {
+  if (!doi) return null;
+
+  const value = doi.trim();
+
+  return value.startsWith("http")
+    ? value
+    : `https://doi.org/${value}`;
+}
+
+
+---
+
+
+
+<BaseLayout
+
+  title="Payam Research Group"
+
+  description="Payam Research Group investigates scientific computing for materials and structures, computational mechanics, architected materials, bio-inspired structures, and structural engineering."
+
+>
+
+  <main>
+
+    <!-- HERO: left-aligned statement and smaller illustration at right -->
+
+    <section class="hero">
+
+      <div class="hero-layout">
+
+        <div class="hero-content">
+
+          <p class="hero-eyebrow">PAYAM RESEARCH GROUP</p>
+
+          <h1>
+
+            <span class="hero-title-main">Scientific Computing</span>
+
+            <span class="hero-title-highlight">for Materials and Structures</span>
+
+          </h1>
+
+          <p class="hero-description">
+
+            Advancing the understanding, modelling and design of materials and
+
+            engineering structures through computational methods, mechanics and
+
+            scientific research.
+
+          </p>
+
+          <div class="hero-actions">
+
+            <a class="hero-button hero-button-primary" href="/research/">
+
+              Explore Research
+
+            </a>
+
+            <a class="hero-button hero-button-secondary" href="/publications/">
+
+              View Publications
+
+            </a>
+
+          </div>
+
+        </div>
+
+
+
+        <div class="hero-image-container">
+
+          <img
+
+            class="hero-image"
+
+            src="/images/scms-hero.png?v=2"
+
+            alt="Scientific illustration of computational mechanics, materials and engineering structures"
+
+            loading="eager"
+
+            decoding="async"
+
+            fetchpriority="high"
+
+          />
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- INTRODUCTION -->
+
+    <section class="introduction-section">
+
+      <div class="container" data-reveal>
+
+        <p class="section-label">ABOUT OUR RESEARCH</p>
+
+        <h2>Computational Research in Materials and Structural Mechanics</h2>
+
+        <p class="introduction-text">
+
+          Payam Research Group brings together computational modelling,
+
+          numerical analysis and mechanics to investigate the behaviour of
+
+          materials and structures. Our research spans multiple scales, from
+
+          material architecture and bio-inspired systems to the mechanical
+
+          response of engineering structures.
+
+        </p>
+
+        <a href="/research/" class="text-link">
+
+          Discover our research themes <span aria-hidden="true">→</span>
+
+        </a>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- RESEARCH THEMES -->
+
+    <section class="research-section">
+
+      <div class="container">
+
+        <div class="section-heading" data-reveal>
+
+          <p class="section-label">OUR RESEARCH</p>
+
+          <h2>Research Themes</h2>
+
+          <p class="section-description">
+
+            Four connected themes spanning computational mechanics, advanced
+
+            materials and engineering structures.
+
+          </p>
+
+        </div>
+
+        <div class="research-grid">
+
+          {researchThemes.map((theme) => (
+
+            <a
+
+              class="research-card"
+
+              href={`/research/${theme.slug}/`}
+
+              data-reveal
+
+            >
+
+              <span class="theme-number">THEME {theme.number}</span>
+
+              <h3>{theme.title}</h3>
+
+              <p>{theme.description}</p>
+
+              <span class="card-link">
+
+                Explore Theme <span aria-hidden="true">→</span>
+
+              </span>
+
+            </a>
+
+          ))}
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- RESEARCH APPROACH -->
+
+    <section class="approach-section">
+
+      <div class="container approach-layout">
+
+        <div data-reveal>
+
+          <p class="section-label">OUR APPROACH</p>
+
+          <h2>Connecting Computation and Engineering</h2>
+
+        </div>
+
+        <div class="approach-content" data-reveal>
+
+          <p>
+
+            We use computational and theoretical approaches to understand the
+
+            mechanical behaviour of materials and structural systems.
+
+          </p>
+
+          <p>
+
+            Our work draws on finite element analysis, multiscale modelling,
+
+            numerical simulation and computational design to explore material
+
+            performance and structural response.
+
+          </p>
+
+          <p>
+
+            These approaches support research into architected materials,
+
+            bio-inspired structures, and structural systems under complex
+
+            mechanical and thermal conditions.
+
+          </p>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- SELECTED PUBLICATIONS -->
+
+    <section class="publications-section">
+
+      <div class="container">
+
+        <div class="section-heading" data-reveal>
+
+          <p class="section-label">RESEARCH OUTPUTS</p>
+
+          <h2>Selected Recent Publications</h2>
+
+          <p class="section-description">
+
+            Explore selected papers and the group's wider publication catalogue.
+
+          </p>
+
+        </div>
+
+        <div class="publication-list">
+
+          {recentPublications.map((paper) => (
+
+            <article class="publication-item" data-reveal>
+
+              <div class="publication-year">{paper.year}</div>
+
+              <div class="publication-details">
+
+                <h3>{paper.title}</h3>
+
+                <p class="publication-authors">{paper.authors}</p>
+
+ 
+{paper.venue && (
+  <p class="publication-venue">
+    {paper.venue}
+  </p>
+)}
+
+
+                {paper.doi && (
+
+                  <a
+
+                    href={doiLink(paper.doi)}
+
+                    target="\_blank"
+
+                    rel="noopener noreferrer"
+
+                    class="publication-link"
+
+                  >
+
+                    View Publication <span aria-hidden="true">↗</span>
+
+                  </a>
+
+                )}
+
+              </div>
+
+            </article>
+
+          ))}
+
+        </div>
+
+        <div class="publications-action" data-reveal>
+
+          <a href="/publications/" class="button-outline-dark">
+
+            Browse All Publications <span aria-hidden="true">→</span>
+
+          </a>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- PEOPLE -->
+
+    <section class="people-cta">
+
+      <div class="container cta-layout">
+
+        <div data-reveal>
+
+          <p class="cta-eyebrow">OUR RESEARCH COMMUNITY</p>
+
+          <h2>People Behind the Research</h2>
+
+          <p>
+
+            Discover the researchers, students and alumni contributing to
+
+            Payam Research Group.
+
+          </p>
+
+        </div>
+
+        <a href="/people/" class="button-light">
+
+          Meet Our People <span aria-hidden="true">→</span>
+
+        </a>
+
+      </div>
+
+    </section>
+
+  </main>
+
+</BaseLayout>
+
+
+
+<style>
+
+  /* Wider, Apple-inspired desktop composition with larger typography.
+
+     Mobile and tablet rules remain comfortable and conventional. */
+
+  .container {
+
+    width: 100%;
+
+    max-width: 1680px;
+
+    margin-inline: auto;
+
+  }
+
+
+
+  .section-label {
+
+    color: #117e88;
+
+    font-size: clamp(13px, 0.95vw, 16px);
+
+    font-weight: 800;
+
+    letter-spacing: 2px;
+
+    text-transform: uppercase;
+
+  }
+
+
+
+  h2 {
+
+    max-width: 1100px;
+
+    margin: 14px 0 24px;
+
+    color: #172b4d;
+
+    font-size: clamp(37px, 3.6vw, 68px);
+
+    line-height: 1.13;
+
+    font-weight: 700;
+
+    letter-spacing: -0.035em;
+
+  }
+
+
+
+  .section-heading {
+
+    margin-bottom: clamp(28px, 3.2vw, 54px);
+
+    text-align: left;
+
+  }
+
+
+
+  .section-description {
+
+    max-width: 950px;
+
+    color: #60758b;
+
+    font-size: clamp(18px, 1.35vw, 24px);
+
+    line-height: 1.65;
+
+  }
+
+
+
+  /* HERO */
+
+  .hero {
+
+    background: linear-gradient(120deg, #11243a 0%, #183852 55%, #285576 100%);
+
+    color: #fff;
+
+    padding: clamp(72px, 7vw, 138px) clamp(26px, 4.5vw, 94px);
+
+  }
+
+
+
+  .hero-layout {
+
+    width: 100%;
+
+    max-width: 1680px;
+
+    margin-inline: auto;
+
+    display: grid;
+
+    grid-template-columns: minmax(0, 1.24fr) minmax(0, 0.76fr);
+
+    align-items: center;
+
+    column-gap: clamp(24px, 3vw, 68px);
+
+  }
+
+
+
+  .hero-content { min-width: 0; }
+
+
+
+  .hero-eyebrow {
+
+    margin: 0 0 23px;
+
+    color: #b8dedf;
+
+    font-size: clamp(13px, 0.95vw, 16px);
+
+    font-weight: 800;
+
+    letter-spacing: 2.3px;
+
+  }
+
+
+
+  .hero h1 {
+
+    margin: 0;
+
+    max-width: 1000px;
+
+    font-size: clamp(43px, 4.5vw, 89px);
+
+    line-height: 1.08;
+
+    font-weight: 700;
+
+    letter-spacing: -0.04em;
+
+  }
+
+
+
+  .hero-title-main { display: block; color: #fff; }
+
+  .hero-title-highlight { display: block; color: #8ae0dc; }
+
+
+
+  .hero-description {
+
+    max-width: 800px;
+
+    margin: clamp(24px, 2.8vw, 46px) 0 30px;
+
+    color: #dceaf0;
+
+    font-size: clamp(18px, 1.3vw, 24px);
+
+    line-height: 1.7;
+
+  }
+
+
+
+  .hero-image-container {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    width: 100%;
+
+    max-width: 100%;
+
+    min-width: 0;
+
+    box-sizing: border-box;
+
+    padding-inline: clamp(12px, 1.6vw, 28px);
+
+  }
+
+
+
+  .hero-image {
+
+    display: block;
+
+    width: 100%;
+
+    height: auto;
+
+    object-fit: contain;
+
+    border-radius: 0;
+
+  }
+
+
+
+  /* On large screens the image is exactly 70% of its former
+
+     100%-wide display within the right-hand column. */
+
+  @media (min-width: 1100px) {
+
+    .hero-image { width: 120%; }
+
+  }
+
+
+
+  .hero-actions {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    align-items: center;
+
+    gap: 15px;
+
+  }
+
+
+
+  .hero-button {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-height: 54px;
+
+    padding: 14px clamp(22px, 1.8vw, 32px);
+
+    border: 1px solid transparent;
+
+    border-radius: 5px;
+
+    font-size: clamp(16px, 1.06vw, 19px);
+
+    font-weight: 700;
+
+    line-height: 1.35;
+
+    text-decoration: none;
+
+    transition: background .25s ease, color .25s ease, border-color .25s ease, transform .25s ease;
+
+  }
+
+
+
+  .hero-button:hover { transform: translateY(-2px); }
+
+  .hero-button-primary { color: #fff; background: #117e88; border-color: #117e88; }
+
+  .hero-button-primary:hover { background: #0f6973; border-color: #0f6973; }
+
+  .hero-button-secondary { color: #fff; background: transparent; border-color: #fff; }
+
+  .hero-button-secondary:hover { color: #11243a; background: #fff; }
+
+
+
+  /* INTRODUCTION */
+
+  .introduction-section {
+
+    background: #fff;
+
+    padding: clamp(76px, 7vw, 140px) clamp(26px, 4.5vw, 94px);
+
+  }
+
+
+
+  .introduction-text {
+
+    max-width: 1180px;
+
+    margin-bottom: 26px;
+
+    color: #51667a;
+
+    font-size: clamp(19px, 1.55vw, 27px);
+
+    line-height: 1.7;
+
+  }
+
+
+
+  .text-link, .publication-link {
+
+    color: #117e88;
+
+    font-weight: 700;
+
+    text-decoration: none;
+
+  }
+
+
+
+  .text-link { font-size: clamp(17px, 1.15vw, 21px); }
+
+  .text-link span { display: inline-block; margin-left: 6px; transition: transform .2s ease; }
+
+  .text-link:hover, .publication-link:hover { text-decoration: underline; }
+
+  .text-link:hover span { transform: translateX(4px); }
+
+
+
+  /* RESEARCH CARDS */
+
+  .research-section {
+
+    background: #edf3f7;
+
+    padding: clamp(76px, 7vw, 140px) clamp(26px, 4.5vw, 94px);
+
+  }
+
+
+
+  .research-grid {
+
+    display: grid;
+
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: clamp(20px, 2.2vw, 36px);
+
+  }
+
+
+
+  .research-card {
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    min-height: 290px;
+
+    padding: clamp(28px, 3vw, 55px);
+
+    background: #fff;
+
+    border: 1px solid #dce5ec;
+
+    border-radius: 12px;
+
+    color: #172b4d;
+
+    text-decoration: none;
+
+    transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+
+  }
+
+
+
+  .research-card:hover {
+
+    transform: translateY(-5px);
+
+    border-color: #8dbdc0;
+
+    box-shadow: 0 14px 30px rgba(17, 36, 58, .08);
+
+  }
+
+
+
+  .theme-number {
+
+    color: #117e88;
+
+    font-size: clamp(12px, .9vw, 15px);
+
+    font-weight: 800;
+
+    letter-spacing: 1.8px;
+
+  }
+
+
+
+  .research-card h3 {
+
+    margin: 17px 0;
+
+    color: #19364c;
+
+    font-size: clamp(25px, 2.1vw, 39px);
+
+    line-height: 1.23;
+
+  }
+
+
+
+  .research-card p {
+
+    margin: 0 0 24px;
+
+    color: #60758b;
+
+    font-size: clamp(17px, 1.17vw, 22px);
+
+    line-height: 1.7;
+
+  }
+
+
+
+  .card-link {
+
+    margin-top: auto;
+
+    color: #117e88;
+
+    font-size: clamp(16px, 1.05vw, 19px);
+
+    font-weight: 700;
+
+  }
+
+
+
+  .card-link span { display: inline-block; margin-left: 5px; transition: transform .2s ease; }
+
+  .research-card:hover .card-link span { transform: translateX(5px); }
+
+
+
+  /* APPROACH */
+
+  .approach-section {
+
+    background: #fff;
+
+    padding: clamp(76px, 7vw, 140px) clamp(26px, 4.5vw, 94px);
+
+  }
+
+
+
+  .approach-layout {
+
+    display: grid;
+
+    grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+
+    align-items: start;
+
+    gap: clamp(38px, 5vw, 100px);
+
+  }
+
+
+
+  .approach-content p {
+
+    margin: 0 0 22px;
+
+    color: #51667a;
+
+    font-size: clamp(19px, 1.4vw, 25px);
+
+    line-height: 1.72;
+
+  }
+
+
+
+  /* PUBLICATIONS */
+
+  .publications-section {
+
+    background: #f7f9fc;
+
+    padding: clamp(76px, 7vw, 140px) clamp(26px, 4.5vw, 94px);
+
+  }
+
+
+
+  .publication-list { border-top: 1px solid #dce5ec; }
+
+  .publication-item {
+
+    display: grid;
+
+    grid-template-columns: 110px minmax(0, 1fr);
+
+    gap: 30px;
+
+    padding: clamp(27px, 2.5vw, 45px) 0;
+
+    border-bottom: 1px solid #dce5ec;
+
+  }
+
+
+
+  .publication-year { color: #117e88; font-size: clamp(20px, 1.45vw, 26px); font-weight: 800; }
+
+  .publication-details h3 {
+
+    margin: 0 0 12px;
+
+    color: #19364c;
+
+    font-size: clamp(23px, 1.75vw, 32px);
+
+    line-height: 1.35;
+
+  }
+
+
+
+  .publication-authors, .publication-venue {
+
+    margin: 0 0 6px;
+
+    color: #51667a;
+
+    font-size: clamp(17px, 1.16vw, 21px);
+
+    line-height: 1.65;
+
+  }
+
+
+
+  .publication-venue { color: #60758b; font-style: italic; }
+
+  .publication-link { display: inline-block; margin-top: 9px; font-size: clamp(16px, 1.05vw, 19px); }
+
+  .publications-action { margin-top: 38px; }
+
+
+
+  .button-outline-dark, .button-light {
+
+    display: inline-flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    gap: 10px;
+
+    min-height: 54px;
+
+    padding: 13px 25px;
+
+    border-radius: 5px;
+
+    font-size: clamp(16px, 1.1vw, 20px);
+
+    font-weight: 700;
+
+    text-decoration: none;
+
+    transition: background .25s ease, color .25s ease;
+
+  }
+
+
+
+  .button-outline-dark { border: 1px solid #117e88; background: transparent; color: #117e88; }
+
+  .button-outline-dark:hover { background: #117e88; color: #fff; }
+
+
+
+  /* PEOPLE */
+
+  .people-cta {
+
+    background: #11243a;
+
+    padding: clamp(76px, 7vw, 140px) clamp(26px, 4.5vw, 94px);
+
+    color: #fff;
+
+  }
+
+
+
+  .cta-layout {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 40px;
+
+  }
+
+
+
+  .cta-eyebrow { color: #8ae0dc; font-size: clamp(13px, .95vw, 16px); font-weight: 800; letter-spacing: 2px; }
+
+  .people-cta h2 { margin: 12px 0 16px; color: #fff; }
+
+  .people-cta p:not(.cta-eyebrow) {
+
+    max-width: 850px;
+
+    color: #dceaf0;
+
+    font-size: clamp(19px, 1.35vw, 24px);
+
+    line-height: 1.7;
+
+  }
+
+
+
+  .button-light { flex-shrink: 0; color: #11243a; background: #fff; border: 1px solid #fff; }
+
+  .button-light:hover { background: transparent; color: #fff; }
+
+
+
+  /* ACCESSIBILITY */
+
+  .hero-button:focus-visible, .text-link:focus-visible,
+
+  .research-card:focus-visible, .publication-link:focus-visible,
+
+  .button-outline-dark:focus-visible, .button-light:focus-visible {
+
+    outline: 3px solid #8ae0dc;
+
+    outline-offset: 4px;
+
+  }
+
+
+
+  /* TABLET: keep the established readable sizing */
+
+  @media (max-width: 1099px) {
+
+    h2 { font-size: clamp(30px, 4vw, 43px); }
+
+    .hero h1 { font-size: clamp(39px, 4.5vw, 58px); }
+
+    .section-label, .hero-eyebrow { font-size: 13px; }
+
+    .section-description { font-size: 17px; }
+
+    .hero-description { font-size: 18px; }
+
+    .hero-button { font-size: 15px; min-height: 50px; }
+
+    .introduction-text { font-size: 18px; }
+
+    .research-card h3 { font-size: 26px; }
+
+    .research-card p { font-size: 16px; }
+
+    .approach-content p { font-size: 17px; }
+
+    .publication-details h3 { font-size: 21px; }
+
+    .publication-authors, .publication-venue { font-size: 15px; }
+
+    .people-cta p:not(.cta-eyebrow) { font-size: 17px; }
+
+    .hero-layout { gap: 25px; }
+
+    .approach-layout { grid-template-columns: 1fr; gap: 20px; }
+
+    .cta-layout { flex-direction: column; align-items: flex-start; }
+
+  }
+
+
+
+  /* MOBILE: image stacks below the text as before */
+
+  @media (max-width: 750px) {
+
+    .hero { padding: 70px 7%; }
+
+    .hero-layout { grid-template-columns: 1fr; gap: 35px; }
+
+    .hero h1 { font-size: clamp(38px, 8vw, 54px); }
+
+    .hero-description { font-size: 17px; }
+
+    .hero-image-container { width: 100%; max-width: 600px; margin-inline: auto; padding-inline: 16px; }
+
+    .hero-actions { align-items: stretch; }
+
+    .hero-button { width: 100%; }
+
+    .introduction-section, .research-section, .approach-section,
+
+    .publications-section, .people-cta { padding-left: 7%; padding-right: 7%; }
+
+    .research-grid { grid-template-columns: 1fr; }
+
+    .research-card { min-height: auto; padding: 27px; }
+
+    .publication-item { grid-template-columns: 1fr; gap: 8px; }
+
+    .publication-details h3 { font-size: 19px; }
+
+  }
+
+
+
+  @media (prefers-reduced-motion: reduce) {
+
+    .hero-button, .research-card, .card-link span, .text-link span,
+
+    .button-outline-dark, .button-light { transition: none; }
+
+  }
+
+</style>
+
+

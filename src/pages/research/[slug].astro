@@ -1,0 +1,1108 @@
+
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { researchThemes } from "../../data/researchThemes.js";
+import { publications } from "../../data/publications.js";
+import { additionalPublications } from "../../data/additionalPublications.js";
+import { projectsByTheme } from "../../data/researchProjects.js";
+
+/*
+  Research-theme page.
+
+  - Each theme displays its own selected projects.
+  - Each project has an image, description and methodology.
+  - Related papers appear immediately below their projects.
+  - Missing image files display a placeholder.
+  - No separate "Further Publications" section.
+*/
+
+export function getStaticPaths() {
+  return researchThemes.map((theme) => ({
+    params: { slug: theme.slug },
+    props: { theme }
+  }));
+}
+
+interface Props {
+  theme: (typeof researchThemes)[number];
+}
+
+interface Publication {
+  id: string;
+  title: string;
+  authors?: string;
+  year?: number | null;
+  venue?: string;
+  type?: string;
+  doi?: string | null;
+  url?: string | null;
+  linkLabel?: string;
+}
+
+interface ExtraPublication {
+  title: string;
+  note: string;
+  url: string;
+}
+
+interface Project {
+  id: string;
+  title: string;
+  status: string;
+  summary: string;
+  image: string;
+  imageAlt: string;
+  imageCaption: string;
+  focus: string[];
+  publicationIds: string[];
+  extraPublications: ExtraPublication[];
+}
+
+const { theme } = Astro.props;
+
+const themeSlug: string = theme.slug;
+
+// Connect publications to their project IDs.
+
+const allPublications: Publication[] = [
+  ...publications,
+  ...additionalPublications
+];
+
+const paperById = new Map<string, Publication>(
+  allPublications.map((paper) => [paper.id, paper])
+);
+
+const projectGroups =
+  projectsByTheme as Record<string, Project[]>;
+
+const selectedProjects =
+  projectGroups[themeSlug] ?? [];
+
+const projectCards = selectedProjects.map((project) => ({
+  ...project,
+  relatedPapers: project.publicationIds
+    .map((id) => paperById.get(id))
+    .filter(
+      (paper): paper is Publication =>
+        paper !== undefined
+    )
+}));
+
+// Optional introductory overview.
+
+const themeDetails = theme as typeof theme & {
+  overview?: string | string[];
+  introduction?: string | string[];
+};
+
+const rawOverview =
+  themeDetails.overview ?? themeDetails.introduction;
+
+const overviewParagraphs: string[] =
+  Array.isArray(rawOverview)
+    ? rawOverview
+    : typeof rawOverview === "string" &&
+        rawOverview.trim()
+      ? [rawOverview]
+      : [];
+
+// Published Figure 1 on the Bio-inspired page.
+
+const isBioInspired =
+  themeSlug === "bio-inspired-materials-structures";
+
+const publishedFigurePath =
+  "/images/research/bio-inspired-digital-twin-workflow.png";
+
+// Set to false if you do not wish to show Figure 1.
+// Missing image files are also hidden automatically.
+const hasBioFigure: boolean = true;
+
+const figureDOI =
+  "https://doi.org/10.1002/adem.202502110";
+
+const paperUrl = (paper: Publication): string | null => {
+  if (paper.url) return paper.url;
+
+  if (paper.doi) {
+    return paper.doi.startsWith("http")
+      ? paper.doi
+      : `https://doi.org/${paper.doi}`;
+  }
+
+  return null;
+};
+---
+
+<BaseLayout
+  title={theme.title}
+  description={theme.description}
+>
+  <main>
+
+    <!-- RESEARCH THEME HEADER -->
+
+    <section class="hero">
+      <div class="container">
+
+        <p class="eyebrow">
+          PAYAM RESEARCH GROUP
+        </p>
+
+        <p class="hero-kicker">
+          RESEARCH THEME {theme.number}
+        </p>
+
+        <h1>{theme.title}</h1>
+
+        <p class="hero-description">
+          {theme.description}
+        </p>
+
+        <a class="hero-back" href="/research/">
+          ← All research themes
+        </a>
+
+      </div>
+    </section>
+
+
+    <!-- RESEARCH OVERVIEW -->
+
+    {overviewParagraphs.length > 0 && (
+      <section class="overview-section">
+
+        <div class="container" data-reveal>
+
+          <p class="section-label">
+            RESEARCH OVERVIEW
+          </p>
+
+          <h2>About this research theme</h2>
+
+          {overviewParagraphs.map((paragraph) => (
+            <p class="overview-copy">
+              {paragraph}
+            </p>
+          ))}
+
+        </div>
+      </section>
+    )}
+
+
+    <!-- SELECTED PROJECTS -->
+
+    <section
+      class="projects-section"
+      id="selected-projects"
+    >
+      <div class="container">
+
+        <div class="section-intro" data-reveal>
+
+          <p class="section-label">
+            RESEARCH ACTIVITIES
+          </p>
+
+          <h2>Selected Research Projects</h2>
+
+          <p class="section-description">
+            Explore representative research activities,
+            project methods and directly associated
+            research outputs.
+          </p>
+
+        </div>
+
+
+        <div class="projects-list">
+
+          {projectCards.map((project, index) => (
+
+            <article class="project-card" data-reveal>
+
+              <div class="project-main">
+
+                <!-- PROJECT IMAGE -->
+
+                <div class="project-image-area">
+
+                  {project.image && (
+                    <img
+                      class="project-image"
+                      src={project.image}
+                      alt={project.imageAlt}
+                      width="1200"
+                      height="900"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  )}
+
+                  <!-- Displayed when an image is missing -->
+
+                  <div
+                    class="project-placeholder"
+                    data-project-image-fallback
+                    hidden={Boolean(project.image)}
+                  >
+
+                    <span
+                      class="placeholder-orbit"
+                      aria-hidden="true"
+                    ></span>
+
+                    <span class="placeholder-text">
+                      Project image coming soon
+                    </span>
+
+                  </div>
+
+                  {project.image &&
+                    project.imageCaption && (
+
+                    <p class="image-caption">
+                      {project.imageCaption}
+                    </p>
+
+                  )}
+
+                </div>
+
+
+                <!-- PROJECT DESCRIPTION -->
+
+                <div class="project-info">
+
+                  <div class="project-meta">
+
+                    <span class="project-index">
+                      PROJECT {String(index + 1).padStart(2, "0")}
+                    </span>
+
+                    <span class="project-status">
+                      {project.status}
+                    </span>
+
+                  </div>
+
+                  <h3>{project.title}</h3>
+
+                  <p class="project-summary">
+                    {project.summary}
+                  </p>
+
+
+                  <!-- EXPANDABLE METHODS -->
+
+                  {project.focus.length > 0 && (
+
+                    <details class="project-details">
+
+                      <summary>
+                        Project focus and methodology
+                      </summary>
+
+                      <ul>
+                        {project.focus.map((point) => (
+                          <li>{point}</li>
+                        ))}
+                      </ul>
+
+                    </details>
+
+                  )}
+
+                </div>
+
+              </div>
+
+
+              <!-- RELATED PUBLICATIONS -->
+
+              {(project.relatedPapers.length > 0 ||
+                project.extraPublications.length > 0) && (
+
+                <div class="related-research">
+
+                  <h4>Related Publications</h4>
+
+                  <ol class="paper-list">
+
+                    {project.relatedPapers.map((paper) => (
+
+                      <li class="paper-item">
+
+                        <span class="paper-title">
+                          {paper.title}
+                        </span>
+
+                        {paper.authors && (
+
+                          <span class="paper-authors">
+                            {paper.authors}
+                          </span>
+
+                        )}
+
+                        <span class="paper-venue">
+                          {paper.venue || "Research publication"}
+                          {paper.year
+                            ? ` · ${paper.year}`
+                            : ""}
+                        </span>
+
+                        {paperUrl(paper) && (
+
+                          <a
+                            href={paperUrl(paper)!}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="paper-link"
+                          >
+                            {paper.doi
+                              ? "View DOI / publication ↗"
+                              : paper.linkLabel ||
+                                "View publication ↗"}
+                          </a>
+
+                        )}
+
+                      </li>
+
+                    ))}
+
+                    {project.extraPublications.map((item) => (
+
+                      <li class="paper-item">
+
+                        <span class="paper-title">
+                          {item.title}
+                        </span>
+
+                        <span class="paper-venue">
+                          {item.note}
+                        </span>
+
+                        <a
+                          href={item.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="paper-link"
+                        >
+                          Open publication record ↗
+                        </a>
+
+                      </li>
+
+                    ))}
+
+                  </ol>
+
+                </div>
+
+              )}
+
+            </article>
+
+          ))}
+
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- PUBLISHED FIGURE 1 -->
+    <!-- BIO-INSPIRED THEME ONLY -->
+
+    {isBioInspired && (
+
+      <section class="published-figure-section">
+
+        <div class="container">
+
+          <div class="figure-heading" data-reveal>
+
+            <p class="section-label">
+              PUBLISHED SCIENTIFIC PERSPECTIVE
+            </p>
+
+            <h2>
+              From Biological Inspiration to
+              Computational Design
+            </h2>
+
+            <p class="section-description">
+              A conceptual multiscale workflow connecting
+              biological inspiration, computational modelling,
+              data-driven methods and experimental evaluation.
+            </p>
+
+          </div>
+
+          {hasBioFigure && (
+
+            <figure
+              class="published-figure"
+              data-reveal
+            >
+
+              <img
+                src={publishedFigurePath}
+                alt="Figure 1: multiscale computational design workflow for bio-inspired materials"
+                loading="lazy"
+                decoding="async"
+              />
+
+              <figcaption>
+                Figure 1 from P. Khazaeinejad,
+                “From Biomimicry to Autonomous Design:
+                The Computational Revolution in
+                Bio-Inspired Materials,”
+                <em>Advanced Engineering Materials</em>
+                27 (2025), 2502110.
+                Copyright © 2025 Wiley-VCH GmbH.
+              </figcaption>
+
+            </figure>
+
+          )}
+
+          <a
+            class="figure-source"
+            href={figureDOI}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Read the published article ↗
+          </a>
+
+        </div>
+
+      </section>
+
+    )}
+
+
+    <!-- RETURN TO RESEARCH -->
+
+    <section class="return-section">
+      <div class="container">
+
+        <a href="/research/">
+          ← Back to all research themes
+        </a>
+
+      </div>
+    </section>
+
+  </main>
+</BaseLayout>
+
+
+<!-- MISSING IMAGE FALLBACK -->
+
+<script>
+
+  function setupResearchImages() {
+
+    document
+      .querySelectorAll<HTMLImageElement>(
+        ".project-image"
+      )
+      .forEach((image) => {
+
+        if (
+          image.dataset.imageChecked === "true"
+        ) {
+          return;
+        }
+
+        image.dataset.imageChecked = "true";
+
+        const area =
+          image.closest(".project-image-area");
+
+        const fallback =
+          area?.querySelector<HTMLElement>(
+            "[data-project-image-fallback]"
+          );
+
+        const caption =
+          area?.querySelector<HTMLElement>(
+            ".image-caption"
+          );
+
+        const showFallback = () => {
+
+          image.hidden = true;
+
+          if (fallback) {
+            fallback.hidden = false;
+          }
+
+          if (caption) {
+            caption.hidden = true;
+          }
+
+        };
+
+        image.addEventListener(
+          "error",
+          showFallback,
+          { once: true }
+        );
+
+        if (
+          image.complete &&
+          image.naturalWidth === 0
+        ) {
+          showFallback();
+        }
+
+      });
+
+
+    // Hide the optional published figure if
+    // its image file is not installed yet.
+
+    document
+      .querySelectorAll<HTMLImageElement>(
+        ".published-figure img"
+      )
+      .forEach((image) => {
+
+        if (
+          image.dataset.imageChecked === "true"
+        ) {
+          return;
+        }
+
+        image.dataset.imageChecked = "true";
+
+        const hideFigure = () => {
+
+          const figure =
+            image.closest("figure");
+
+          if (figure) {
+            figure.hidden = true;
+          }
+
+        };
+
+        image.addEventListener(
+          "error",
+          hideFigure,
+          { once: true }
+        );
+
+        if (
+          image.complete &&
+          image.naturalWidth === 0
+        ) {
+          hideFigure();
+        }
+
+      });
+
+  }
+
+
+  // Compatible with Astro ClientRouter.
+
+  document.addEventListener(
+    "astro:page-load",
+    setupResearchImages
+  );
+
+  if (document.readyState === "loading") {
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      setupResearchImages,
+      { once: true }
+    );
+
+  } else {
+
+    setupResearchImages();
+
+  }
+
+</script>
+
+
+<style>
+
+  /* SHARED WIDTH */
+
+  .container {
+    width: 100%;
+    max-width: 1200px;
+    margin-inline: auto;
+  }
+
+
+  /* HERO */
+
+  .hero {
+    padding: 95px 8%;
+    background: linear-gradient(
+      120deg,
+      #11243a,
+      #285576
+    );
+    color: #ffffff;
+  }
+
+  .eyebrow {
+    margin: 0;
+    color: #8ae0dc;
+    letter-spacing: 2px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .hero-kicker {
+    margin: 20px 0 0;
+    color: #b7dadd;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1.6px;
+  }
+
+  .hero h1 {
+    max-width: 1100px;
+    margin: 20px 0;
+    font-size: clamp(38px, 5vw, 64px);
+    line-height: 1.12;
+    letter-spacing: -0.025em;
+  }
+
+  .hero-description {
+    max-width: 750px;
+    font-size: 18px;
+    line-height: 1.8;
+    color: #e0eaf2;
+  }
+
+  .hero-back {
+    display: inline-block;
+    margin-top: 12px;
+    color: #8ae0dc;
+    font-size: 16px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .hero-back:hover {
+    text-decoration: underline;
+  }
+
+
+  /* MAIN SECTIONS */
+
+  .overview-section,
+  .projects-section,
+  .published-figure-section {
+    padding: 85px 8%;
+  }
+
+  .overview-section {
+    background: #ffffff;
+  }
+
+  .projects-section {
+    background: #f3f7fa;
+  }
+
+  .published-figure-section {
+    background: #ffffff;
+  }
+
+  .section-label {
+    margin: 0;
+    color: #117e88;
+    font-size: clamp(13px, .9vw, 15px);
+    letter-spacing: 2px;
+    font-weight: 800;
+  }
+
+  h2 {
+    margin: 12px 0 18px;
+    font-size: clamp(32px, 3.6vw, 52px);
+    line-height: 1.18;
+    letter-spacing: -0.025em;
+    color: #172b4d;
+  }
+
+  .section-intro,
+  .figure-heading {
+    margin-bottom: 34px;
+  }
+
+  .section-description,
+  .overview-copy {
+    max-width: 950px;
+    margin: 12px 0;
+    color: #51667a;
+    font-size: clamp(17px, 1.15vw, 20px);
+    line-height: 1.75;
+  }
+
+
+  /* PROJECT CARDS */
+
+  .projects-list {
+    display: grid;
+    gap: 30px;
+  }
+
+  .project-card {
+    min-width: 0;
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid #dbe5ec;
+    border-radius: 12px;
+    transition:
+      border-color .25s ease,
+      box-shadow .25s ease;
+  }
+
+  .project-card:hover {
+    border-color: #abcbd0;
+    box-shadow:
+      0 16px 38px rgba(17,36,58,.07);
+  }
+
+  .project-main {
+    display: grid;
+    grid-template-columns:
+      minmax(0, .83fr)
+      minmax(0, 1.17fr);
+    gap: clamp(22px, 2.8vw, 44px);
+    padding: clamp(22px, 2.6vw, 40px);
+    align-items: start;
+  }
+
+
+  /* PROJECT IMAGES */
+
+  .project-image-area {
+    min-width: 0;
+  }
+
+  .project-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    object-fit: contain;
+    background: #edf3f7;
+    border-radius: 0;
+  }
+
+  .image-caption {
+    color: #60758b;
+    font-size: 13px;
+    line-height: 1.6;
+    margin: 9px 0 0;
+  }
+
+  .project-image[hidden],
+  .project-placeholder[hidden],
+  .image-caption[hidden],
+  .published-figure[hidden] {
+    display: none !important;
+  }
+
+  .project-placeholder {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background: linear-gradient(
+      145deg,
+      #e5f0f3,
+      #d4e4ec
+    );
+    color: #40697a;
+  }
+
+  .placeholder-orbit {
+    position: absolute;
+    width: 54%;
+    aspect-ratio: 1;
+    border: 2px solid rgba(
+      17, 126, 136, .3
+    );
+    border-radius: 50%;
+    box-shadow:
+      0 0 0 22px rgba(17,126,136,.045),
+      0 0 0 65px rgba(17,126,136,.035);
+    transform:
+      rotateX(58deg) rotate(35deg);
+  }
+
+  .placeholder-text {
+    z-index: 1;
+    padding: 9px 13px;
+    background: rgba(255,255,255,.83);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: .4px;
+  }
+
+
+  /* PROJECT DESCRIPTIONS */
+
+  .project-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 16px;
+  }
+
+  .project-index {
+    color: #117e88;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 1px;
+  }
+
+  .project-status {
+    padding: 5px 9px;
+    color: #315368;
+    background: #eaf2f5;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .project-info h3 {
+    margin: 0 0 16px;
+    color: #19364c;
+    font-size: clamp(25px, 2.1vw, 36px);
+    line-height: 1.28;
+    letter-spacing: -.015em;
+  }
+
+  .project-summary {
+    margin: 0;
+    color: #51667a;
+    font-size: clamp(17px, 1.15vw, 20px);
+    line-height: 1.78;
+  }
+
+
+  /* EXPANDABLE METHODOLOGY */
+
+  .project-details {
+    margin-top: 22px;
+    padding-top: 17px;
+    border-top: 1px solid #e1e9ee;
+  }
+
+  .project-details summary {
+    color: #117e88;
+    font-weight: 700;
+    font-size: clamp(16px, 1.05vw, 19px);
+    cursor: pointer;
+  }
+
+  .project-details ul {
+    margin: 17px 0 0;
+    padding-left: 23px;
+  }
+
+  .project-details li {
+    margin: 10px 0;
+    color: #51667a;
+    font-size: clamp(16px, 1vw, 18px);
+    line-height: 1.65;
+  }
+
+
+  /* RELATED PUBLICATIONS */
+
+  .related-research {
+    padding:
+      27px clamp(22px, 2.6vw, 40px) 31px;
+    border-top: 1px solid #e1e9ee;
+    background: #fbfdfe;
+  }
+
+  .related-research h4 {
+    margin: 0 0 18px;
+    color: #19364c;
+    font-size: clamp(21px, 1.55vw, 27px);
+  }
+
+  .paper-list {
+    margin: 0;
+    padding-left: 27px;
+  }
+
+  .paper-item {
+    margin: 0;
+    padding: 16px 0;
+    color: #51667a;
+    border-bottom: 1px solid #e5edf2;
+  }
+
+  .paper-item:last-child {
+    border-bottom: none;
+  }
+
+  .paper-item::marker {
+    color: #117e88;
+    font-weight: 700;
+  }
+
+  .paper-title {
+    display: block;
+    color: #19364c;
+    font-size: clamp(19px, 1.25vw, 23px);
+    font-weight: 700;
+    line-height: 1.45;
+  }
+
+  .paper-authors,
+  .paper-venue {
+    display: block;
+    margin-top: 6px;
+    font-size: clamp(16px, 1.05vw, 19px);
+    line-height: 1.6;
+  }
+
+  .paper-venue {
+    color: #60758b;
+    font-style: italic;
+  }
+
+  .paper-link,
+  .figure-source {
+    display: inline-block;
+    margin-top: 8px;
+    font-weight: 700;
+    color: #117e88;
+    font-size: clamp(16px, 1.02vw, 18px);
+    text-decoration: none;
+  }
+
+  .paper-link:hover,
+  .figure-source:hover {
+    text-decoration: underline;
+  }
+
+
+  /* PUBLISHED FIGURE */
+
+  .published-figure {
+    margin: 25px 0 16px;
+    padding: clamp(15px, 2.4vw, 32px);
+    background: #f7f9fc;
+    border: 1px solid #dce5ec;
+  }
+
+  .published-figure img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    border-radius: 0;
+  }
+
+  .published-figure figcaption {
+    margin-top: 15px;
+    color: #60758b;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+
+  /* RETURN LINK */
+
+  .return-section {
+    padding: 38px 8%;
+    background: #11243a;
+  }
+
+  .return-section a {
+    color: #8ae0dc;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .return-section a:hover {
+    text-decoration: underline;
+  }
+
+  a:focus-visible,
+  summary:focus-visible {
+    outline: 3px solid #117e88;
+    outline-offset: 4px;
+  }
+
+
+  /* TABLET */
+
+  @media (max-width: 800px) {
+    .project-main {
+      grid-template-columns: 1fr;
+    }
+
+    .project-image-area {
+      max-width: 720px;
+    }
+  }
+
+
+  /* MOBILE */
+
+  @media (max-width: 700px) {
+    .hero {
+      padding: 65px 7%;
+    }
+
+    .hero-description {
+      font-size: 16px;
+    }
+
+    .overview-section,
+    .projects-section,
+    .published-figure-section {
+      padding: 60px 7%;
+    }
+
+    .return-section {
+      padding-inline: 7%;
+    }
+
+    .project-main {
+      padding: 22px;
+    }
+
+    .related-research {
+      padding: 23px 22px 25px;
+    }
+  }
+
+
+  /* REDUCED MOTION */
+
+  @media (prefers-reduced-motion: reduce) {
+    .project-card {
+      transition: none;
+    }
+  }
+
+</style>

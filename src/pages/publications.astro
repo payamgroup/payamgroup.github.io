@@ -1,0 +1,520 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { publications } from "../data/publications.js";
+import { additionalPublications } from "../data/additionalPublications.js";
+
+// Display journal and conference records together, without cover images.
+// Books, policy reports, and journal special issues have cover cards.
+
+// Explicit types prevent Astro/TypeScript warnings without changing the data.
+type PublicationKind =
+  | "journal"
+  | "conference"
+  | "proceedings"
+  | "book"
+  | "policy"
+  | "special"
+  | "editorial";
+
+type PublicationGroup =
+  | "scholarly"
+  | "book"
+  | "policy"
+  | "special"
+  | "editorial";
+
+interface PublicationEntry {
+  id: string;
+  title: string;
+  authors?: string;
+  venue?: string;
+  year?: number | null;
+  type?: string | null;
+  doi?: string | null;
+  url?: string | null;
+  linkLabel?: string;
+  cover?: string;
+}
+
+interface NormalisedPublication extends Omit<PublicationEntry, "type"> {
+  type: PublicationKind;
+}
+function normaliseType(type: string | null | undefined): PublicationKind {
+  const value = String(type || "journal").toLowerCase();
+  if (value.includes("proceeding")) return "proceedings";
+  if (value.includes("conference")) return "conference";
+  if (value.includes("editorial")) return "editorial";
+  if (value.includes("policy") || value.includes("report")) return "policy";
+  if (value.includes("book")) return "book";
+  if (value.includes("special")) return "special";
+  return "journal";
+}
+
+function groupFor(type: PublicationKind): PublicationGroup {
+  return type === "journal" || type === "conference" || type === "proceedings" ? "scholarly" : type;
+}
+
+function getDoi(item: PublicationEntry): string | null {
+  for (const candidate of [item.doi, item.url]) {
+    if (!candidate) continue;
+    const match = String(candidate).match(/(?:doi\.org\/|doi:\s*|^)(10\.\d{4,9}\/[^\s?#]+)/i);
+    if (match) return match[1].replace(/[.,;)]+$/, "");
+  }
+  return null;
+}
+
+function getLink(item: PublicationEntry): string | null {
+  if (item.url) return item.url;
+  const doi = getDoi(item);
+  return doi ? `https://doi.org/${doi}` : null;
+}
+
+const typeLabels: Record<PublicationKind, string> = {
+  journal: "Journal article",
+  conference: "Conference presentation",
+  proceedings: "Published conference paper",
+  book: "Book",
+  policy: "Policy / professional report",
+  special: "Journal special issue / section",
+  editorial: "Editorial"
+};
+
+const groupLabels: Record<PublicationGroup, string> = {
+  book: "Books",
+  policy: "Contributions to Policy and Professional Reports",
+  special: "Journal Special Issues / Sections",
+  editorial: "Editorials",
+  scholarly: "Journal and Conference Publications"
+};
+
+// Historical records are stored in src/data/additionalPublications.js.
+// Publisher-verified metadata lives in the shared data files.
+
+
+
+// Preserve original IDs so related papers continue appearing on research pages.
+// The shared data files include historical contributions.
+// Each work is displayed once when ID and title/year match.
+// This protects your existing bibliography and research-theme links.
+const rawRecords: PublicationEntry[] = [
+  ...publications,
+  ...additionalPublications
+];
+
+const uniqueRecords = new Map<string, NormalisedPublication>();
+const seenTitles = new Set<string>();
+
+function identityKey(item: PublicationEntry): string {
+  return `${String(item.year ?? "unknown")}:${item.title
+    .normalize("NFKD")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "")}`;
+}
+
+for (const item of rawRecords) {
+  const key = identityKey(item);
+  if (uniqueRecords.has(item.id) || seenTitles.has(key)) continue;
+  seenTitles.add(key);
+  uniqueRecords.set(item.id, {
+    ...item,
+    type: normaliseType(item.type)
+  });
+}
+
+const records: NormalisedPublication[] = [
+  ...uniqueRecords.values()
+].sort(
+  (a, b) =>
+    Number(b.year || 0) - Number(a.year || 0) ||
+    String(a.title || "").localeCompare(String(b.title || ""))
+);
+
+const years: number[] = [
+  ...new Set(
+    records
+      .map((item) => item.year)
+      .filter((year): year is number => typeof year === "number")
+  )
+].sort((a, b) => b - a);
+
+const scholarly = records.filter((item) => groupFor(item.type) === "scholarly");
+const editorials = records.filter((item) => item.type === "editorial");
+
+const coverGroups: {
+  type: "book" | "policy" | "special";
+  heading: string;
+  items: NormalisedPublication[];
+}[] = (
+  [
+    { type: "book", heading: "Books" },
+    { type: "policy", heading: "Contributions to Policy and Professional Reports" },
+    { type: "special", heading: "Journal Special Issues and Sections" }
+  ] as const
+).map((group) => ({
+  ...group,
+  items: records.filter((item) => item.type === group.type)
+}));
+
+function searchable(item: NormalisedPublication): string {
+  return [
+    item.title, item.authors, item.venue, item.year,
+    getDoi(item), typeLabels[item.type]
+  ].filter(Boolean).join(" ").toLowerCase();
+}
+---
+
+<BaseLayout
+  title="Publications & Research Outputs"
+  description="Explore SCMS journal and conference publications with DOI links, together with books, policy reports, journal special issues and editorial contributions."
+>
+  <main>
+    <section class="hero">
+      <div class="container">
+        <p class="eyebrow">PAYAM RESEARCH GROUP</p>
+        <h1>Publications & Research Outputs</h1>
+        <p class="hero-description">
+          Explore books, policy documents and special issues with their covers and
+          publisher links, followed by editorials and a numbered bibliography of
+          journal and conference publications with DOI links where available.
+        </p>
+      </div>
+    </section>
+
+    <section class="publications-section">
+      <div class="container">
+        <div class="intro" data-reveal>
+          <h2>Browse publications</h2>
+          <p>Search by title, author, venue, year or DOI, and filter by publication group.</p>
+        </div>
+
+        <div class="filters" aria-label="Publication search and filters">
+          <label class="field" for="publication-search">
+            <span>Search publications</span>
+            <input id="publication-search" type="search" placeholder="Title, author, DOI..." />
+          </label>
+          <label class="field" for="publication-year">
+            <span>Year</span>
+            <select id="publication-year">
+              <option value="all">All years</option>
+              {years.map((year) => <option value={String(year)}>{year}</option>)}
+            </select>
+          </label>
+          <label class="field" for="publication-group">
+            <span>Category</span>
+            <select id="publication-group">
+              <option value="all">All categories</option>
+              {Object.entries(groupLabels).map(([value, label]) => (
+                <option value={value}>{label}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <p id="publication-count" class="result-count" role="status" aria-live="polite">
+          {records.length} publications found
+        </p>
+
+        {coverGroups.map((group) => group.items.length > 0 && (
+          <section class="publication-group" data-publication-section>
+            <div class="group-heading">
+              <p class="section-label">RESEARCH OUTPUTS</p>
+              <h2>{group.heading}</h2>
+            </div>
+            <div class="cover-grid">
+              {group.items.map((item) => {
+                const link = getLink(item);
+                return (
+                  <article
+                    class="cover-card"
+                    data-publication-record
+                    data-year={String(item.year ?? "unknown")}
+                    data-group={group.type}
+                    data-search={searchable(item)}
+                  >
+                    <div class="cover-visual">
+                      {item.cover ? (
+                        <>
+                          {link ? (
+                            <a class="cover-link" href={link} target="_blank" rel="noopener noreferrer" aria-label={`Open publisher page for ${item.title}`}>
+                              <img class="cover-img" src={item.cover} alt={`Cover of ${item.title}`} loading="lazy" />
+                            </a>
+                          ) : (
+                            <img class="cover-img" src={item.cover} alt={`Cover of ${item.title}`} loading="lazy" />
+                          )}
+                          <div class="cover-placeholder" hidden aria-hidden="true">
+                            <strong>SCMS</strong><span>Cover image coming soon</span>
+                          </div>
+                        </>
+                      ) : (
+                        <div class="cover-placeholder">
+                          <strong>SCMS</strong><span>Cover image coming soon</span>
+                        </div>
+                      )}
+                    </div>
+                    <div class="cover-details">
+                      <span class="type-tag">{typeLabels[item.type]}</span>
+                      <span class="year">{item.year || "Year not listed"}</span>
+                      <h3>{item.title}</h3>
+                      {item.authors && <p class="authors">{item.authors}</p>}
+                      {item.venue && <p class="venue">{item.venue}</p>}
+                      {link ? (
+                        <a class="publication-link" href={link} target="_blank" rel="noopener noreferrer">
+                          {item.linkLabel || "View publisher page"}
+                        </a>
+                      ) : (
+                        <span class="pending">Publisher link to be verified</span>
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+        ))}
+
+        {editorials.length > 0 && (
+          <section class="publication-group" data-publication-section>
+            <div class="group-heading">
+              <p class="section-label">SCHOLARLY CONTRIBUTIONS</p>
+              <h2>Editorials</h2>
+            </div>
+            <ol class="bibliography">
+              {editorials.map((item) => {
+                const doi = getDoi(item);
+                const link = getLink(item);
+                return (
+                  <li
+                    class="bibliography-entry"
+                    data-publication-record
+                    data-year={String(item.year ?? "unknown")}
+                    data-group="editorial"
+                    data-search={searchable(item)}
+                  >
+                    <div class="entry-heading"><strong>{item.title}</strong></div>
+                    {item.authors && <p class="authors">{item.authors}</p>}
+                    <p class="venue">{item.venue}{item.year ? ` · ${item.year}` : ""}</p>
+                    {doi ? (
+                      <a class="publication-link" href={`https://doi.org/${doi}`} target="_blank" rel="noopener noreferrer">
+                        DOI: {doi}
+                      </a>
+                    ) : link ? (
+                      <a class="publication-link" href={link} target="_blank" rel="noopener noreferrer">View editorial</a>
+                    ) : null}
+                  </li>
+                );
+              })}
+            </ol>
+          </section>
+        )}
+
+        {scholarly.length > 0 && (
+          <section class="publication-group" data-publication-section>
+            <div class="group-heading">
+              <p class="section-label">ACADEMIC BIBLIOGRAPHY</p>
+              <h2>Journal and Conference Publications</h2>
+            </div>
+            <ol class="bibliography">
+              {scholarly.map((item) => {
+                const doi = getDoi(item);
+                const link = getLink(item);
+                return (
+                  <li
+                    class="bibliography-entry"
+                    data-publication-record
+                    data-year={String(item.year ?? "unknown")}
+                    data-group="scholarly"
+                    data-search={searchable(item)}
+                  >
+                    <div class="entry-heading">
+                      <strong>{item.title}</strong>
+                      <span class="type-tag">{typeLabels[item.type]}</span>
+                    </div>
+                    {item.authors && <p class="authors">{item.authors}</p>}
+                    <p class="venue">
+                      {item.venue}
+                      {item.year ? ` · ${item.year}` : ""}
+                    </p>
+                    {doi ? (
+                      <a class="publication-link" href={`https://doi.org/${doi}`} target="_blank" rel="noopener noreferrer">
+                        DOI: {doi}
+                      </a>
+                    ) : link ? (
+                      <a class="publication-link" href={link} target="_blank" rel="noopener noreferrer">
+                        {item.linkLabel || "View publication"}
+                      </a>
+                    ) : null}
+                  </li>
+                );
+              })}
+            </ol>
+          </section>
+        )}
+
+        <p id="publication-no-results" class="empty-message" hidden>
+          No publications match your search and filters.
+        </p>
+        <p class="academic-note">
+          Policy and professional reports are attributed to their publishing
+          organisations; inclusion does not necessarily indicate personal authorship.
+        </p>
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+
+<script>
+  function setupPublicationPage() {
+    const search = document.querySelector<HTMLInputElement>("#publication-search");
+    const year = document.querySelector<HTMLSelectElement>("#publication-year");
+    const group = document.querySelector<HTMLSelectElement>("#publication-group");
+    const count = document.querySelector<HTMLElement>("#publication-count");
+    const empty = document.querySelector<HTMLElement>("#publication-no-results");
+
+    if (!search || !year || !group || !count || !empty) return;
+    if (search.dataset.initialised === "true") return;
+    search.dataset.initialised = "true";
+
+    const records = Array.from(document.querySelectorAll<HTMLElement>("[data-publication-record]"));
+    const sections = Array.from(document.querySelectorAll<HTMLElement>("[data-publication-section]"));
+
+    // Store non-null references for the nested event callback.
+    const searchInput = search;
+    const yearSelect = year;
+    const groupSelect = group;
+    const countLabel = count;
+    const emptyMessage = empty;
+
+    function applyFilters() {
+      const query = searchInput.value.trim().toLowerCase();
+      let matches = 0;
+
+      records.forEach((record) => {
+        const matchesSearch = (record.dataset.search || "").includes(query);
+        const matchesYear = yearSelect.value === "all" || record.dataset.year === yearSelect.value;
+        const matchesGroup = groupSelect.value === "all" || record.dataset.group === groupSelect.value;
+        record.hidden = !(matchesSearch && matchesYear && matchesGroup);
+        if (!record.hidden) matches += 1;
+      });
+
+      sections.forEach((section) => {
+        const entries = section.querySelectorAll<HTMLElement>("[data-publication-record]");
+        section.hidden = !Array.from(entries).some((entry) => !entry.hidden);
+      });
+
+      countLabel.textContent = `${matches} publication${matches === 1 ? "" : "s"} found`;
+      emptyMessage.hidden = matches !== 0;
+    }
+
+    search.addEventListener("input", applyFilters);
+    year.addEventListener("change", applyFilters);
+    group.addEventListener("change", applyFilters);
+
+    // Show a placeholder if a cover file has not yet been uploaded.
+    document.querySelectorAll<HTMLImageElement>(".cover-img").forEach((img) => {
+      const visual = img.closest<HTMLElement>(".cover-visual");
+      const fallback = visual?.querySelector<HTMLElement>(".cover-placeholder");
+      const coverLink = img.closest<HTMLAnchorElement>(".cover-link");
+
+      function showFallback() {
+        if (coverLink) coverLink.hidden = true;
+        else img.hidden = true;
+        if (fallback) {
+          fallback.hidden = false;
+          fallback.removeAttribute("aria-hidden");
+        }
+      }
+
+      img.addEventListener("error", showFallback, { once: true });
+      if (img.complete && img.naturalWidth === 0) showFallback();
+    });
+
+    applyFilters();
+  }
+
+  document.addEventListener("astro:page-load", setupPublicationPage);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setupPublicationPage, { once: true });
+  } else {
+    setupPublicationPage();
+  }
+</script>
+
+<style>
+  .container { max-width: 1180px; margin: 0 auto; }
+  .hero { padding: 88px 8%; color: #fff; background: linear-gradient(120deg, #11243a, #285576); }
+  .eyebrow, .section-label { font-size: 12px; font-weight: 700; letter-spacing: 2px; color: #168b95; }
+  .hero .eyebrow { color: #8ae0dc; }
+  h1 { font-size: clamp(36px, 5vw, 60px); line-height: 1.15; margin: 20px 0; }
+  .hero-description { max-width: 810px; color: #e0eaf2; font-size: 18px; line-height: 1.8; }
+  .publications-section { background: #f3f7fa; padding: 72px 8%; }
+  .intro { margin-bottom: 27px; }
+  h2 { font-size: clamp(27px, 3.5vw, 38px); margin: 10px 0 12px; line-height: 1.25; }
+  .intro p, .group-heading > p:not(.section-label), .academic-note { color: #60758b; line-height: 1.8; }
+  .filters { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1.6fr); gap: 16px; margin: 24px 0 20px; }
+  .field { display: flex; flex-direction: column; gap: 8px; color: #24445e; font-size: 14px; font-weight: 700; }
+  .field input, .field select { width: 100%; min-width: 0; padding: 13px 14px; border: 1px solid #c9d8e3; border-radius: 8px; background: #fff; color: #172b4d; font: inherit; font-weight: 400; }
+  .field input:focus-visible, .field select:focus-visible, .publication-link:focus-visible, .cover-link:focus-visible { outline: 3px solid #168b95; outline-offset: 3px; }
+  .result-count { margin: 20px 0; color: #546b7e; font-size: 14px; }
+  .publication-group { margin: 45px 0 66px; }
+  .publication-group[hidden], [data-publication-record][hidden], .empty-message[hidden], .cover-placeholder[hidden], .cover-link[hidden], .cover-img[hidden] { display: none !important; }
+  .group-heading { margin-bottom: 20px; }
+  .group-heading p { max-width: 800px; }
+  .bibliography { list-style-type: decimal; padding: 0 0 0 32px; margin: 0; }
+  .bibliography-entry { padding: 19px 12px 19px 8px; border-bottom: 1px solid #dce5ec; line-height: 1.65; }
+  .bibliography-entry::marker { color: #168b95; font-weight: 700; }
+  .entry-heading { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; }
+  .entry-heading strong { font-size: 17px; color: #19364c; }
+  .type-tag { display: inline-block; align-self: flex-start; border-radius: 5px; padding: 4px 8px; background: #e8f4f3; color: #136c73; font-size: 12px; font-weight: 700; }
+  .authors, .venue { margin: 6px 0; color: #60758b; font-size: 14px; line-height: 1.65; }
+  .venue { font-style: italic; }
+  .publication-link { display: inline-block; margin-top: 9px; color: #117d87; text-decoration: none; font-weight: 700; font-size: 14px; overflow-wrap: anywhere; }
+  .publication-link:hover { text-decoration: underline; }
+  .cover-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+  .cover-card { display: grid; grid-template-columns: 198px minmax(0, 1fr); gap: 26px; padding: 28px; border-radius: 12px; border: 1px solid #dfe7ee; background: #fff; }
+  .cover-visual { width: 198px; min-height: 264px; align-self: start; }
+  .cover-link { display: block; width: 100%; }
+  .cover-img { display: block; max-height: 330px; width: 100%; height: auto; object-fit: contain; border: 1px solid #e2e8ee; border-radius: 0; }
+  .cover-placeholder { min-height: 264px; display: flex; flex-direction: column; justify-content: space-between; border-radius: 0; padding: 18px 15px; background: #dce7ed; color: #285576; }
+  .cover-placeholder strong { font-size: 20px; }
+  .cover-placeholder span { font-size: 12px; line-height: 1.5; }
+  .cover-details { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; gap: 6px; }
+  .cover-details h3 { margin: 8px 0 4px; font-size: 18px; line-height: 1.4; }
+  .cover-details .publication-link, .cover-details .pending { margin-top: auto; padding-top: 12px; }
+  .cover-details .year, .pending { font-size: 13px; color: #60758b; }
+  .empty-message { padding: 22px; background: #fff; border-radius: 8px; color: #60758b; }
+  .academic-note { margin-top: 35px; font-size: 13px; }
+  /*
+   * 50% larger desktop covers: 198px -> 297px.
+   * Larger covers and long scholarly titles need enough room to breathe.
+   * Keep one card per row unless the viewport comfortably fits two.
+   */
+  @media (min-width: 1200px) {
+    .cover-card {
+      grid-template-columns: 297px minmax(0, 1fr);
+      gap: 34px;
+      padding: 32px;
+    }
+    .cover-visual {
+      width: 297px;
+      min-height: 396px;
+    }
+    .cover-img { max-height: 495px; }
+    .cover-placeholder { min-height: 396px; padding: 25px 20px; }
+  }
+  @media (max-width: 1699px) { .cover-grid { grid-template-columns: 1fr; } }
+  @media (min-width: 1700px) { .cover-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+  @media (max-width: 700px) {
+    .hero, .publications-section { padding: 58px 7%; }
+    .hero-description { font-size: 16px; }
+    .filters { grid-template-columns: 1fr; }
+    .cover-card { grid-template-columns: 96px minmax(0, 1fr); gap: 14px; padding: 16px; }
+    .cover-visual { width: 96px; min-height: 130px; }
+    .cover-img { max-height: 180px; }
+    .cover-placeholder { min-height: 130px; padding: 9px; }
+    .cover-placeholder strong { font-size: 16px; }
+    .cover-details h3 { font-size: 16px; }
+    .bibliography { padding-left: 23px; }
+    .bibliography-entry { padding-right: 0; }
+  }
+</style>
