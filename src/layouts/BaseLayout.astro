@@ -139,6 +139,16 @@ const year = new Date().getFullYear();
       } else {
         setupScrollAnimations();
       }
+
+document.addEventListener("contextmenu", (event) => {
+  if (
+    event.target instanceof Element &&
+    event.target.closest("img")
+  ) {
+    event.preventDefault();
+  }
+});
+
     </script>
     <BackToTop />
     <PageInteractions />
@@ -156,7 +166,14 @@ const year = new Date().getFullYear();
     color: #172b4d;
   }
   :global(button), :global(input), :global(select), :global(textarea) { font-family: inherit; }
-  :global(img) { border-radius: 0 !important; }
+  
+:global(img) {
+  border-radius: 0 !important;
+  -webkit-user-drag: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 
   .site-header {
     display: flex;
