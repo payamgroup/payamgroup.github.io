@@ -117,6 +117,28 @@ export const projectsByTheme = {
         "Relative density and stiffness–mass trade-offs"
       ],
 
+      // New ongoing research subsection within this existing metamaterials project.
+      ongoingResearch: {
+        status: "ONGOING RESEARCH",
+        title: "AI-Guided Design of Damage-Tolerant Mechanical Metamaterials",
+        summary:
+          "This ongoing research investigates whether bio-inspired branching and redundant load-transfer pathways can be embedded within monolithic mechanical metamaterials to preserve load-bearing performance following localised damage. The proposed approach combines parametric gyroid and spatially modified lattice design, finite-element analysis and machine-learning-guided optimisation.",
+        objective:
+          "Investigate whether damage tolerance can be improved through spatially programmed lattice architecture and alternative load paths, without increasing overall material usage.",
+        image: "/images/projects/ai-guided-damage-tolerant-metamaterials.png",
+        imageAlt:
+          "Conceptual illustration linking leaf-venation-inspired design, intact and locally damaged architected lattices, finite-element evaluation, AI-guided optimisation and experimental validation",
+        imageCaption:
+          "Conceptual research illustration showing the proposed design, analysis, optimisation and validation workflow. Lattice damage and coloured fields are illustrative, not calculated simulation results.",
+        methods: [
+          "Generate reference sheet-gyroid and bio-inspired, spatially modified lattice architectures at approximately equal relative density.",
+          "Establish a reliable CAD-to-FEA pipeline to compare intact and locally damaged structures under equivalent loading and boundary conditions.",
+          "Quantify stiffness, stress redistribution and residual load-bearing capacity to assess potential damage tolerance.",
+          "Train and validate machine-learning models on verified finite-element results before using them for design optimisation.",
+          "Additively manufacture selected candidates and compare experimental mechanical measurements with model predictions."
+        ]
+      },
+
       publicationIds: [],
 
       extraPublications: []
