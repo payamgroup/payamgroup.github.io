@@ -45,6 +45,17 @@ interface ExtraPublication {
   url: string;
 }
 
+interface OngoingResearch {
+  status: string;
+  title: string;
+  summary: string;
+  objective: string;
+  image: string;
+  imageAlt: string;
+  imageCaption: string;
+  methods: string[];
+}
+
 interface Project {
   id: string;
   title: string;
@@ -56,6 +67,7 @@ interface Project {
   focus: string[];
   publicationIds: string[];
   extraPublications: ExtraPublication[];
+  ongoingResearch?: OngoingResearch;
 }
 
 const { theme } = Astro.props;
@@ -319,6 +331,51 @@ const paperUrl = (paper: Publication): string | null => {
 
               </div>
 
+
+              <!-- ONGOING RESEARCH SUBSECTION -->
+              <!-- Shown only for projects that define ongoingResearch. -->
+
+              {project.ongoingResearch && (
+                <section class="ongoing-research" aria-label="Ongoing research direction">
+                  <span class="ongoing-kicker">
+                    {project.ongoingResearch.status}
+                  </span>
+
+                  <h4>{project.ongoingResearch.title}</h4>
+
+                  <p class="ongoing-summary">
+                    {project.ongoingResearch.summary}
+                  </p>
+
+                  <p class="ongoing-objective">
+                    <strong>Research objective:</strong>{" "}
+                    {project.ongoingResearch.objective}
+                  </p>
+
+                  <figure class="ongoing-figure">
+                    <img
+                      src={project.ongoingResearch.image}
+                      alt={project.ongoingResearch.imageAlt}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <figcaption>
+                      {project.ongoingResearch.imageCaption}
+                    </figcaption>
+                  </figure>
+
+                  {project.ongoingResearch.methods.length > 0 && (
+                    <details class="ongoing-methods">
+                      <summary>Proposed research workflow and methods</summary>
+                      <ul>
+                        {project.ongoingResearch.methods.map((method) => (
+                          <li>{method}</li>
+                        ))}
+                      </ul>
+                    </details>
+                  )}
+                </section>
+              )}
 
               <!-- RELATED PUBLICATIONS -->
 
@@ -930,6 +987,82 @@ const paperUrl = (paper: Publication): string | null => {
     line-height: 1.65;
   }
 
+
+  /* ONGOING METAMATERIALS RESEARCH SUBSECTION */
+
+  .ongoing-research {
+    padding: clamp(25px, 3.1vw, 44px);
+    border-top: 1px solid #dbe5ec;
+    background: #f6fafb;
+  }
+
+  .ongoing-kicker {
+    display: inline-block;
+    margin-bottom: 10px;
+    color: #117e88;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 1.6px;
+  }
+
+  .ongoing-research h4 {
+    margin: 0 0 16px;
+    color: #19364c;
+    font-size: clamp(23px, 2vw, 31px);
+    line-height: 1.3;
+  }
+
+  .ongoing-summary,
+  .ongoing-objective {
+    max-width: 1020px;
+    margin: 0 0 16px;
+    color: #51667a;
+    font-size: clamp(16px, 1.1vw, 19px);
+    line-height: 1.75;
+  }
+
+  .ongoing-objective strong { color: #19364c; }
+
+  .ongoing-figure {
+    max-width: 1020px;
+    margin: 25px auto;
+  }
+
+  .ongoing-figure img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 0;
+    background: #fff;
+  }
+
+  .ongoing-figure figcaption {
+    margin-top: 10px;
+    color: #60758b;
+    font-size: 13px;
+    line-height: 1.65;
+  }
+
+  .ongoing-methods {
+    padding-top: 14px;
+    border-top: 1px solid #dbe5ec;
+  }
+
+  .ongoing-methods summary {
+    color: #117e88;
+    font-weight: 700;
+    font-size: clamp(16px, 1.05vw, 19px);
+    cursor: pointer;
+  }
+
+  .ongoing-methods ul { margin: 15px 0 0; padding-left: 23px; }
+
+  .ongoing-methods li {
+    margin: 10px 0;
+    color: #51667a;
+    font-size: clamp(16px, 1vw, 18px);
+    line-height: 1.65;
+  }
 
   /* RELATED PUBLICATIONS */
 
