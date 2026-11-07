@@ -129,7 +129,7 @@ export const projectsByTheme = {
         imageAlt:
           "Conceptual illustration linking leaf-venation-inspired design, intact and locally damaged architected lattices, finite-element evaluation, AI-guided optimisation and experimental validation",
         imageCaption:
-          "Conceptual research illustration showing the proposed design, analysis, optimisation and validation workflow. Lattice damage and coloured fields are illustrative, not calculated simulation results.",
+          "Conceptual research illustration showing the proposed design, analysis, optimisation and validation workflow.",
         methods: [
           "Generate reference sheet-gyroid and bio-inspired, spatially modified lattice architectures at approximately equal relative density.",
           "Establish a reliable CAD-to-FEA pipeline to compare intact and locally damaged structures under equivalent loading and boundary conditions.",
